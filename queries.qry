@@ -1,0 +1,6 @@
+
+query selectPatients {
+  description: "Select all patients"
+  statement:
+    SELECT org.acme.healthcare.Patient
+}

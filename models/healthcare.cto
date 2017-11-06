@@ -1,0 +1,89 @@
+/**
+ * A business network where members can grant/revoke access to their personal information to other members
+ */
+namespace org.acme.healthcare
+
+concept Address {
+  o String street
+  o String city
+  o String state
+  o String zip
+  o String country
+}
+
+abstract participant Person identified by personId {
+  o String personId
+  o String firstName
+  o String middleName optional
+  o String lastName
+  o String homePhone optional
+  o String mobilePhone optional
+  o String workPhone optional
+  o String email optional
+  o DateTime dob optional
+}
+
+enum RelationshipType {
+  o PARENT
+  o SIBLING
+  o OTHER
+}
+
+participant Relative extends Person {
+  o RelationshipType relationship
+  o String[] authorized optional
+}
+
+participant Patient extends Person {
+  o String healthCardId optional
+  o Address homeAddress optional
+  o Address workAddress optional
+  --> Relative[] relatives
+  --> Person[] emergencyContacts
+  --> Physician familyDoctor
+  --> Physician[] previousFamilyDoctors
+  --> Physician[] specialists
+  o InsuranceProvider[] providers
+}
+
+participant Physician extends Person {
+  o String physicianId
+  --> Patient[] patients
+}
+
+concept InsuranceProvider {
+  o Address address
+  o String phone
+  o String fax optional
+  o String email optional
+  o String website optional
+}
+
+participant Insurer extends Person {
+  o String insurerId
+  o InsuranceProvider company
+  o String[] authorized optional
+}
+
+asset PatientRecord identified by recordId {
+  o String recordId
+  o DateTime timestamp
+  o String notes
+  --> Patient patient
+  --> Physician physician
+}
+
+abstract transaction PatientRecordTransaction {
+  o String patientRecordId
+  o String userId
+}
+
+transaction AuthorizeAccess extends PatientRecordTransaction {
+}
+
+transaction RevokeAccess extends PatientRecordTransaction {
+}
+
+event PatientEvent {
+  o PatientRecordTransaction patientTransaction
+}

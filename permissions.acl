@@ -1,0 +1,82 @@
+/**
+ * Access control rules. These rules allow anyone to submit AuthorizeAccess
+ * and RevokeAccess transaction as well as granting full access to a member's
+ * own record. A member can access another member's details if the member has
+ * added them to their authorized list.
+ */
+
+rule AuthorizeAccessTransaction {
+    description: "Allow all participants to submit AuthorizeAccess transactions"
+    participant: "org.acme.healthcare.Physician"
+    operation: CREATE
+    resource: "org.acme.healthcare.AuthorizeAccess"
+    action: ALLOW
+}
+
+rule RevokeAccessTransaction {
+    description: "Allow all participants to submit RevokeAccess transactions"
+    participant: "ANY"
+    operation: CREATE
+    resource: "org.acme.healthcare.RevokeAccess"
+    action: ALLOW
+}
+
+rule PatientFullAccess {
+  description: "Allow all treating physicians full access to patient records"
+  participant(p): "org.acme.healthcare.Physician"
+  operation: ALL
+  resource(r): "org.acme.healthcare.PatientRecord"
+  condition: (r.physician.getIdentifier() === p.getIdentifier())
+  action: ALLOW
+}
+
+rule InsurerReadAccess {
+  description: "Allow insurance reprs read access to patient records if granted"
+  participant(p): "org.acme.healthcare.Insurer"
+  operation: READ
+  resource(r): "org.acme.healthcare.PatientRecord"
+  condition: (p.authorized && p.authorized.indexOf(r.getIdentifier()) > -1)
+  action: ALLOW
+}
+
+// rule OwnRecordFullAccess {
+//     description: "Allow all participants full access to their own record"
+//     participant(p): "org.acme.healthcare.Member"
+//     operation: ALL
+//     resource(r): "org.acme.healthcare.Member"
+//     condition: (r.getIdentifier() === p.getIdentifier())
+//     action: ALLOW
+// }
+
+// rule ForeignRecordConditionalAccess {
+//     description: "Allow participants access to other people's records if granted"
+//     participant(p): "org.acme.healthcare.Member"
+//     operation: ALL
+//     resource(r): "org.acme.healthcare.Member"
+//     condition: (r.authorized && r.authorized.indexOf(p.getIdentifier()) > -1)
+//     action: ALLOW
+// }
+
+rule SystemACL {
+  description:  "System ACL to permit all access"
+  participant: "org.hyperledger.composer.system.Participant"
+  operation: ALL
+  resource: "org.hyperledger.composer.system.**"
+  action: ALLOW
+}
+
+rule NetworkAdminUser {
+  description: "Grant business network administrators full access to user resources"
+  participant: "org.hyperledger.composer.system.NetworkAdmin"
+  operation: ALL
+  resource: "**"
+  action: ALLOW
+}
+
+rule NetworkAdminSystem {
+  description: "Grant business network administrators full access to system resources"
+  participant: "org.hyperledger.composer.system.NetworkAdmin"
+  operation: ALL
+  resource: "org.hyperledger.composer.system.**"
+  action: ALLOW
+}
