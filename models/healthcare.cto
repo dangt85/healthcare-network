@@ -67,7 +67,7 @@ participant Insurer extends Person {
 
 asset PatientRecord identified by recordId {
   o String recordId
-  o DateTime timestamp
+  o DateTime timestamp default = "new Date()"
   o String notes
   --> Patient patient
   --> Physician physician
