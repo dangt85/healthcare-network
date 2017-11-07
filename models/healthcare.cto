@@ -78,7 +78,14 @@ abstract transaction PatientRecordTransaction {
   o String userId
 }
 
+enum AuthorizationReason {
+  o LEGAL
+  o EMERGENCY 
+  o OTHER
+}
+
 transaction AuthorizeAccess extends PatientRecordTransaction {
+  o AuthorizationReason reason
 }
 
 transaction RevokeAccess extends PatientRecordTransaction {
